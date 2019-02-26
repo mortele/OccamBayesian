@@ -3,8 +3,9 @@ Bayesian optimization applied to OCCAM hybrid particle-field simulations, built 
 
 
 ### Building
-Install the BayesianOptimization package by
+Install the BayesianOptimization package and the [file_read_backwards](https://file-read-backwards.readthedocs.io/en/latest/readme.html) package by
 ```
-> pip install bayesian-optimization
+> pip3 install bayesian-optimization
+> pip3 install file_read_backwards
 ```
-and set the `path` to wherever the OCCAM executable is located.
+and set the `OCCAM_PATH` to wherever the OCCAM executable is located.

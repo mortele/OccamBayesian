@@ -11,7 +11,7 @@ nl_size:
 time_step:
 0.03
 number_of_steps:
-1000
+100
 velocity_read:
 yes
 simulated_ensemble: #NVT_Andersen
@@ -27,9 +27,7 @@ SCF_lattice_update:
 mean_field:
 SCMF
 intra_nonbonded:
-1
-adaptive_mdhpf: # MD region start (x coordinate), MD region end, size of transition region
-50.0 75.0 25.0
+0
 num_config_acc:
 1
 pot_calc_freq:
@@ -45,5 +43,5 @@ trj_print:
 out_print:
 1
 pbc_traj:
-0
+1
 endinput:

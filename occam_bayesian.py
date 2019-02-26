@@ -4,6 +4,7 @@ import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 import bayes_opt as opt
+from file_read_backwards import FileReadBackwards
 
 
 def occam_parameters(steps=1000, kappa=1.0):
@@ -55,12 +56,26 @@ def occam_function(path, executable_name='occamcg'):
     """
     subprocess.call(os.path.join(path, executable_name))
 
+    # Extract the total pressure from the fort.7 file.
+    pressure = None
+    with FileReadBackwards('fort.7') as in_file:
+        for _ in range(50):
+            line = in_file.readline()
+            if line:
+                line = line.split()
+                if len(line) > 2:
+                    if line[1] == 'total' and line[2] == 'press':
+                        pressure = float(line[0])
+            else:
+                break
+    return pressure
+
 
 def occam_optimize(path, steps=100, kappa=np.linspace(0.1, 1.0, 10)):
     """
     Wrapper function for performing the entire optimization procedure.
     """
-    occam_parameters(steps=steps, kappa=kappa)
+    occam_parameters(steps=steps, kappa=kappa[0])
     occam_function(path)
 
 
