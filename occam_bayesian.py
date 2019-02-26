@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 import bayes_opt as opt
 
 
-def occam_parameters(path, steps=1000, kappa=1.0):
+def occam_parameters(steps=1000, kappa=1.0):
     """
     Search replace numbers in OCCAM fort.1 and fort.3 files to specify
     simulation details.
     """
-    with open(os.path.join(path, 'fort.1'), 'r') as in_file:
-        with open(os.path.join(path, 'fort.1_tmp'), 'w') as out_file:
+    with open('fort.1', 'r') as in_file:
+        with open('fort.1_tmp', 'w') as out_file:
             i = -1
             while True:
                 line = in_file.readline()
@@ -26,11 +26,11 @@ def occam_parameters(path, steps=1000, kappa=1.0):
                         out_file.write(line)
                 else:
                     break
-    os.rename(os.path.join(path, 'fort.1'), os.path.join(path, 'fort.1_old'))
-    os.rename(os.path.join(path, 'fort.1_tmp'), os.path.join(path, 'fort.1'))
+    os.rename('fort.1', 'fort.1_old')
+    os.rename('fort.1_tmp', 'fort.1')
 
-    with open(os.path.join(path, 'fort.3'), 'r') as in_file:
-        with open(os.path.join(path, 'fort.3_tmp'), 'w') as out_file:
+    with open('fort.3', 'r') as in_file:
+        with open('fort.3_tmp', 'w') as out_file:
             i = -1
             while True:
                 line = in_file.readline()
@@ -44,16 +44,24 @@ def occam_parameters(path, steps=1000, kappa=1.0):
                         out_file.write(line)
                 else:
                     break
-    os.rename(os.path.join(path, 'fort.3'), os.path.join(path, 'fort.3_old'))
-    os.rename(os.path.join(path, 'fort.3_tmp'), os.path.join(path, 'fort.3'))
+    os.rename('fort.3', 'fort.3_old')
+    os.rename('fort.3_tmp', 'fort.3')
 
 
 def occam_function(path, executable_name='occamcg'):
-    pass
+    """
+    The 'black-box' function we optimize, w.r.t. the parameters adjusted in the
+    occam_parameters function.
+    """
+    subprocess.call(os.path.join(path, executable_name))
 
 
-def occam_optimize(path, steps=500, kappa=np.linspace(0.1, 1.0, 10)):
-    pass
+def occam_optimize(path, steps=100, kappa=np.linspace(0.1, 1.0, 10)):
+    """
+    Wrapper function for performing the entire optimization procedure.
+    """
+    occam_parameters(steps=steps, kappa=kappa)
+    occam_function(path)
 
 
 if __name__ == '__main__':
