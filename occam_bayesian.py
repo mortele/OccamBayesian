@@ -3,7 +3,7 @@ import re
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
-import bayes_opt as opt
+from bayes_opt import BayesianOptimization
 from file_read_backwards import FileReadBackwards
 
 
@@ -75,8 +75,29 @@ def occam_optimize(path, steps=100, kappa=np.linspace(0.1, 1.0, 10)):
     """
     Wrapper function for performing the entire optimization procedure.
     """
-    occam_parameters(steps=steps, kappa=kappa[0])
-    occam_function(path)
+
+    def opt_target(k):
+        """
+        Input for the BayesianOptimization procedure from the bayes_opt
+        package.
+
+        The Bayesian optimization is a maximization procedure, so we have to
+        define a cost function which takes a maximum where the difference
+        between the target pressure and the measured pressure is smallest.
+        """
+        occam_parameters(steps=steps, kappa=k)
+        pressure = occam_function(path)
+        target_pressure = 26.1514
+        cost = 1.0 / (abs(pressure - target_pressure) + 0.1)
+        return cost
+
+    p_bounds = {'k': (0.05, 0.3)}
+    opt = BayesianOptimization(f=opt_target,
+                               pbounds=p_bounds,
+                               verbose=2,
+                               random_state=928982)
+    opt.maximize(init_points=5, n_iter=5)
+    print(opt.max)
 
 
 if __name__ == '__main__':
