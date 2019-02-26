@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from bayes_opt import BayesianOptimization
 from file_read_backwards import FileReadBackwards
+from visualize_progress import plot_gp
 
 
 def occam_parameters(steps=1000, kappa=1.0):
@@ -97,6 +98,7 @@ def occam_optimize(path, steps=100, kappa=np.linspace(0.1, 1.0, 10)):
                                verbose=2,
                                random_state=928982)
     opt.maximize(init_points=5, n_iter=5)
+
     print(opt.max)
 
 
