@@ -1,5 +1,4 @@
 import os
-import re
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,7 +53,8 @@ def occam_function(path, executable_name='occamcg'):
     The 'black-box' function we optimize, w.r.t. the parameters adjusted in the
     occam_parameters function.
     """
-    subprocess.call(os.path.join(path, executable_name))
+    subprocess.call(os.path.join(path, executable_name),
+                    stdout=subprocess.DEVNULL)
 
     # Extract the total pressure from the fort.7 file.
     pressure = None
