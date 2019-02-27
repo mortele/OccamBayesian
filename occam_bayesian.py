@@ -90,8 +90,9 @@ def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
         """
         occam_parameters(steps=steps, kappa=x)
         pressure = occam_function(path)
-        cost = 1.0 / np.sqrt(np.abs(pressure - target_pressure) + 0.5)
+        # cost = 1.0 / np.sqrt(np.abs(pressure - target_pressure) + 0.5)
         # cost = -abs(pressure - target_pressure)
+        cost = 1.0 / ((pressure - target_pressure)**2 + 0.5)
         return cost
 
     p_bounds = {'x': (kappa[0], kappa[1])}
@@ -99,7 +100,7 @@ def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
                                pbounds=p_bounds,
                                verbose=2,
                                random_state=92898)
-    opt.maximize(init_points=10, n_iter=0, kappa=10)
+    opt.maximize(init_points=5, n_iter=0, kappa=5)
 
     fit_param = np.array([-496.8262311718876,
                           2273.7122821175550,
@@ -113,10 +114,10 @@ def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
          + x**fit_exponents[1] * fit_param[2]
          + x**fit_exponents[2] * fit_param[3]
          + x**fit_exponents[3] * fit_param[4])
-    y = 1.0 / np.sqrt(np.abs(y - target_pressure) + 0.5)
+    y = 1.0 / ((y - target_pressure)**2 + 0.5)
 
-    for _ in range(5):
-        opt.maximize(init_points=0, n_iter=5)
+    for _ in range(10):
+        opt.maximize(init_points=0, n_iter=2)
         plot_gp(opt, x, y, set_xlim=(kappa[0], kappa[1]))
         plt.show()
     print(opt.max)
@@ -124,4 +125,4 @@ def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
 
 if __name__ == '__main__':
     OCCAM_PATH = os.path.join('..', 'OCCAM', 'bin')
-    occam_optimize(OCCAM_PATH, steps=200)
+    occam_optimize(OCCAM_PATH, steps=1000)
