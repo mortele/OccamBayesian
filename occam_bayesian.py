@@ -7,7 +7,7 @@ from file_read_backwards import FileReadBackwards
 from visualize_progress import plot_gp
 
 
-def occam_parameters(steps=1000, kappa=1.0):
+def occam_parameters(steps=None, kappa=None):
     """
     Search replace numbers in OCCAM fort.1 and fort.3 files to specify
     simulation details.
@@ -72,12 +72,12 @@ def occam_function(path, executable_name='occamcg'):
     return pressure
 
 
-def occam_optimize(path, steps=100, kappa=np.linspace(0.1, 1.0, 10)):
+def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
     """
     Wrapper function for performing the entire optimization procedure.
     """
 
-    def opt_target(k):
+    def opt_target(x):
         """
         Input for the BayesianOptimization procedure from the bayes_opt
         package.
@@ -86,22 +86,40 @@ def occam_optimize(path, steps=100, kappa=np.linspace(0.1, 1.0, 10)):
         define a cost function which takes a maximum where the difference
         between the target pressure and the measured pressure is smallest.
         """
-        occam_parameters(steps=steps, kappa=k)
+        occam_parameters(steps=steps, kappa=x)
         pressure = occam_function(path)
         target_pressure = 26.1514
-        cost = 1.0 / (abs(pressure - target_pressure) + 0.1)
+        cost = 1.0 / np.sqrt(abs(pressure - target_pressure) + 0.1)
         return cost
 
-    p_bounds = {'k': (0.05, 0.3)}
+    p_bounds = {'x': (kappa[0], kappa[1])}
     opt = BayesianOptimization(f=opt_target,
                                pbounds=p_bounds,
                                verbose=2,
                                random_state=928982)
-    opt.maximize(init_points=5, n_iter=5)
+    opt.maximize(init_points=5, n_iter=0)
 
+    fit_param = np.array([-496.8262311718876,
+                          2273.7122821175550,
+                          -3724.1669657791103,
+                          2747.1118106958093,
+                          -764.3924710639956])
+    fit_exponents = np.array([0.25, 0.5, 0.75, 1])
+    x = np.linspace(kappa[0], kappa[1], 1000).reshape(-1, 1)
+    y = (fit_param[0]
+         + x**fit_exponents[0] * fit_param[1]
+         + x**fit_exponents[1] * fit_param[2]
+         + x**fit_exponents[2] * fit_param[3]
+         + x**fit_exponents[3] * fit_param[4])
+    y = 1.0 / np.sqrt(abs(y - 26.1514) + 0.1)
+
+    for _ in range(10):
+        opt.maximize(init_points=0, n_iter=1)
+        plot_gp(opt, x, y, set_xlim=(kappa[0], kappa[1]))
+        plt.show()
     print(opt.max)
 
 
 if __name__ == '__main__':
     OCCAM_PATH = os.path.join('..', 'OCCAM', 'bin')
-    occam_optimize(OCCAM_PATH)
+    occam_optimize(OCCAM_PATH, steps=1000)
