@@ -73,7 +73,7 @@ def occam_function(path, executable_name='occamcg'):
     return pressure
 
 
-def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
+def occam_optimize(path, steps, kappa, init_points=10):
     """
     Wrapper function for performing the entire optimization procedure.
     """
@@ -100,8 +100,9 @@ def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
                                pbounds=p_bounds,
                                verbose=2,
                                random_state=92898)
-    opt.maximize(init_points=5, n_iter=0, kappa=5)
+    opt.maximize(init_points=init_points, n_iter=0, kappa=5)
 
+    """
     fit_param = np.array([-496.8262311718876,
                           2273.7122821175550,
                           -3724.1669657791103,
@@ -115,14 +116,17 @@ def occam_optimize(path, steps=1000, kappa=(0.05, 0.3)):
          + x**fit_exponents[2] * fit_param[3]
          + x**fit_exponents[3] * fit_param[4])
     y = 1.0 / ((y - target_pressure)**2 + 0.5)
+    """
 
-    for _ in range(10):
-        opt.maximize(init_points=0, n_iter=2)
-        plot_gp(opt, x, y, set_xlim=(kappa[0], kappa[1]))
+    for _ in range(20):
+        opt.maximize(init_points=0, n_iter=5)
+        # plot_gp(opt, x, y, set_xlim=(kappa[0], kappa[1]))
+        plot_gp(opt,
+                set_xlim=(kappa[0], kappa[1]))
         plt.show()
     print(opt.max)
 
 
 if __name__ == '__main__':
     OCCAM_PATH = os.path.join('..', 'OCCAM', 'bin')
-    occam_optimize(OCCAM_PATH, steps=1000)
+    occam_optimize(OCCAM_PATH, 1000, (0.01, 1.0), init_points=10)
