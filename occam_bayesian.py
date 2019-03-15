@@ -112,5 +112,4 @@ def occam_optimize(path, steps, kappa, init_points=10):
 
 if __name__ == '__main__':
     OCCAM_PATH = os.path.join('..', 'OCCAM', 'bin')
-    # occam_optimize(OCCAM_PATH, 1000, (0.01, 1.0), init_points=10)
     occam_optimize(OCCAM_PATH, 1000, (0.01, 1.0), init_points=10)
