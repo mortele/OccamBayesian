@@ -1,7 +1,6 @@
 # /usr/local/bin/python3
 import os
 import subprocess
-import numpy as np
 import matplotlib.pyplot as plt
 from bayes_opt import BayesianOptimization
 from file_read_backwards import FileReadBackwards

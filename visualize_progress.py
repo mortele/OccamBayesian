@@ -60,7 +60,7 @@ def plot_gp(optimizer, x=None, y=None, set_xlim=(-2, 10)):
                              (mu + 1.9600 * sigma)[::-1]]),
               alpha=.6, fc='c', ec='None', label='95% confidence interval')
 
-    #axis.set_xlim(set_xlim)
+    # axis.set_xlim(set_xlim)
     axis.set_ylim((None, None))
     axis.set_ylabel('f(x)', fontdict={'size': 20})
     axis.set_xlabel('x', fontdict={'size': 20})
