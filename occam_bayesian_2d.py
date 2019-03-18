@@ -1,7 +1,7 @@
 # /usr/local/bin/python3
 from bayes_opt import BayesianOptimization
 from franke import franke
-from visualize_2d import plot_progress_2d
+from visualize_2d import PlotProgress_2D
 
 
 param_file_name = 'param.dat'
@@ -56,10 +56,13 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
                                verbose=2,
                                random_state=92898)
     opt.maximize(init_points=init_points, n_iter=0)
-    plot_progress_2d(opt, true_function=true_function)
+
+    pp2 = PlotProgress_2D(opt, true_function=true_function,
+                          cost=lambda x: cost(x, target))
+    pp2.plot()
     for i in range(steps):
         opt.maximize(init_points=0, n_iter=1)
-        plot_progress_2d(opt, true_function=true_function)
+        pp2.plot()
 
 
 if __name__ == '__main__':
