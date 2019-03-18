@@ -7,58 +7,26 @@ from file_read_backwards import FileReadBackwards
 from visualize_progress import plot_gp
 
 
-def occam_parameters(steps=None, kappa=None):
+def _replace_in_file(file_name, key, value):
+    """Create a new file with one change from the given file_name
     """
-    Search replace numbers in OCCAM fort.1 and fort.3 files to specify
-    simulation details.
-    """
-    with open('fort.1', 'r') as in_file:
-        with open('fort.1_tmp', 'w') as out_file:
-            i = -1
-            while True:
-                line = in_file.readline()
-                i += 1
-                if line:
-                    if line.strip() == 'number_of_steps:':
-                        in_file.readline()
-                        out_file.write('number_of_steps:\n')
-                        out_file.write('{n_steps}\n'.format(n_steps=steps))
-                    else:
-                        out_file.write(line)
-                else:
-                    break
-    os.rename('fort.1', 'fort.1_old')
-    os.rename('fort.1_tmp', 'fort.1')
-
-    with open('fort.3', 'r') as in_file:
-        with open('fort.3_tmp', 'w') as out_file:
-            i = -1
-            while True:
-                line = in_file.readline()
-                i += 1
-                if line:
-                    if line.strip() == '* compressibility':
-                        in_file.readline()
-                        out_file.write('* compressibility\n')
-                        out_file.write('{kappa}\n'.format(kappa=kappa))
-                    else:
-                        out_file.write(line)
-                else:
-                    break
-    os.rename('fort.3', 'fort.3_old')
-    os.rename('fort.3_tmp', 'fort.3')
+    tmp_name = file_name + '_tmp'
+    old_name = file_name + '_old'
+    with open(file_name, 'r') as in_file, open(tmp_name, 'w') as out_file:
+        next = False
+        for line in in_file:
+            if next:
+                out_file.write(str(value) + '\n')
+                next = False
+            else:
+                if key in line:
+                    next = True
+                out_file.write(line)
+    os.rename(file_name, old_name)
+    os.rename(tmp_name, file_name)
 
 
-def occam_function(path, executable_name='occamcg'):
-    """
-    The 'black-box' function we optimize, w.r.t. the parameters adjusted in the
-    occam_parameters function.
-    """
-    subprocess.call(os.path.join(path, executable_name),
-                    stdout=subprocess.DEVNULL)
-
-    # Extract the total pressure from the fort.7 file.
-    pressure = None
+def _read_total_pressure():
     with FileReadBackwards('fort.7') as in_file:
         for _ in range(50):
             line = in_file.readline()
@@ -72,15 +40,30 @@ def occam_function(path, executable_name='occamcg'):
     return pressure
 
 
-def occam_optimize(path, steps, kappa, init_points=10):
+def occam_parameters(steps=None, kappa=None):
+    """Search replace numbers in OCCAM fort.1 and fort.3 files to specify
+    simulation details.
     """
-    Wrapper function for performing the entire optimization procedure.
+    _replace_in_file('fort.1', 'number_of_steps', steps)
+    _replace_in_file('fort.3', 'compressibility', kappa)
+
+
+def occam_function(path, executable_name='occamcg'):
+    """The 'black-box' function we optimize, w.r.t. the parameters adjusted in the
+    occam_parameters function.
+    """
+    subprocess.call(os.path.join(path, executable_name),
+                    stdout=subprocess.DEVNULL)
+    return _read_total_pressure()
+
+
+def occam_optimize(path, steps, kappa, init_points=10):
+    """Wrapper function for performing the entire optimization procedure.
     """
     target_pressure = 26.1514
 
     def opt_target(x):
-        """
-        Input for the BayesianOptimization procedure from the bayes_opt
+        """Input for the BayesianOptimization procedure from the bayes_opt
         package.
 
         The Bayesian optimization is a maximization procedure, so we have to
@@ -91,7 +74,8 @@ def occam_optimize(path, steps, kappa, init_points=10):
         pressure = occam_function(path)
         # cost = 1.0 / np.sqrt(np.abs(pressure - target_pressure) + 0.5)
         # cost = -abs(pressure - target_pressure)
-        cost = 1.0 / ((pressure - target_pressure)**2 + 0.5)
+        # cost = 1.0 / ((pressure - target_pressure)**2 + 0.5)
+        cost = - (pressure - target_pressure)**2
         return cost
 
     p_bounds = {'x': (kappa[0], kappa[1])}
