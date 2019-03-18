@@ -1,8 +1,8 @@
 # /usr/local/bin/python3
-import matplotlib.pyplot as plt
 from bayes_opt import BayesianOptimization
-from visualize_progress import plot_gp
 from franke import franke
+from visualize_2d import plot_progress_2d
+
 
 param_file_name = 'param.dat'
 result_file_name = 'res.dat'
@@ -41,7 +41,8 @@ def cost(result, target):
     return - (result - target)**2
 
 
-def optimize_2d(path=None, steps=None, init_points=None, bounds=None):
+def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
+                true_function=None):
     target = 1.5
 
     def wrapper(x, y):
@@ -55,10 +56,13 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None):
                                verbose=2,
                                random_state=92898)
     opt.maximize(init_points=init_points, n_iter=0)
-    opt.maximize(init_points=0, n_iter=steps)
-    print(opt.max)
+    plot_progress_2d(opt, true_function=true_function)
+    for i in range(steps):
+        opt.maximize(init_points=0, n_iter=1)
+        plot_progress_2d(opt, true_function=true_function)
 
 
 if __name__ == '__main__':
     optimize_2d(steps=10, init_points=10,
-                bounds={'x': (0, 1), 'y': (0, 1)})
+                bounds={'x': (0, 1), 'y': (-0.2, 1)},
+                true_function=franke)
