@@ -55,10 +55,10 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
                                pbounds=bounds,
                                verbose=2,
                                random_state=92898)
-    opt.maximize(init_points=init_points, n_iter=0)
-
     pp2 = PlotProgress_2D(opt, true_function=true_function,
                           cost=lambda x: cost(x, target))
+    opt.maximize(init_points=init_points, n_iter=0)
+
     pp2.plot()
     for i in range(steps):
         opt.maximize(init_points=0, n_iter=1)
