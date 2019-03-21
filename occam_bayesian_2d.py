@@ -1,4 +1,6 @@
 # /usr/local/bin/python3
+import numpy as np
+from math import isnan
 from bayes_opt import BayesianOptimization
 from franke import franke
 from visualize_2d import PlotProgress_2D
@@ -6,6 +8,15 @@ from visualize_2d import PlotProgress_2D
 
 param_file_name = 'param.dat'
 result_file_name = 'res.dat'
+
+
+def _check_steps_finite(steps):
+    if isnan(steps) or np.isnan(steps):
+        return False
+    elif steps < 0:
+        return False
+    else:
+        return True
 
 
 def change_parameters(*params):
@@ -42,7 +53,7 @@ def cost(result, target):
 
 
 def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
-                true_function=None):
+                true_function=None, plot=False):
     target = 1.5
 
     def wrapper(x, y):
@@ -55,17 +66,27 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
                                pbounds=bounds,
                                verbose=2,
                                random_state=92898)
-    pp2 = PlotProgress_2D(opt, true_function=true_function,
-                          cost=lambda x: cost(x, target))
+    if plot:
+        pp2 = PlotProgress_2D(opt, true_function=true_function,
+                              cost=lambda x: cost(x, target))
     opt.maximize(init_points=init_points, n_iter=0)
 
-    pp2.plot()
-    for i in range(steps):
-        opt.maximize(init_points=0, n_iter=1)
+    if plot:
         pp2.plot()
+
+    if _check_steps_finite(steps):
+        for _ in range(steps):
+            opt.maximize(init_points=0, n_iter=1)
+            if plot:
+                pp2.plot()
+    else:
+        while True:
+            opt.maximize(init_points=0, n_iter=1)
+            if plot:
+                pp2.plot()
 
 
 if __name__ == '__main__':
     optimize_2d(steps=10, init_points=10,
                 bounds={'x': (0, 1), 'y': (-0.2, 1)},
-                true_function=franke)
+                true_function=franke, plot=False)
