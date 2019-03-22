@@ -1,9 +1,14 @@
 # /usr/local/bin/python3
+import os
 import numpy as np
 from math import isnan
 from bayes_opt import BayesianOptimization
+from bayes_opt.observer import JSONLogger
+from bayes_opt.event import Events
+from bayes_opt.util import load_logs
 from franke import franke
 from visualize_2d import PlotProgress_2D
+from save_optimizer import new_log_file_name, find_log_files
 
 
 param_file_name = 'param.dat'
@@ -47,29 +52,42 @@ def extract_results():
     return res
 
 
-def cost(result, target):
+def cost(result):
     """Cost function to maximize"""
+    target = 1.5
     return - (result - target)**2
 
 
 def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
-                true_function=None, plot=False):
-    target = 1.5
+                true_function=None, plot=False, load=False):
 
     def wrapper(x, y):
         change_parameters(x, y)
         run_simulation()
         res = extract_results()
-        return cost(res[0], target)
+        return cost(res[0])
 
     opt = BayesianOptimization(f=wrapper,
                                pbounds=bounds,
                                verbose=2,
                                random_state=92898)
+    log_file = new_log_file_name()
+    logger = JSONLogger(path=log_file)
+    opt.subscribe(Events.OPTMIZATION_STEP, logger)
+    print('Logging to logfile: ', log_file)
+
+    if load:
+        files = find_log_files()
+        load_logs(opt, logs=files)
+
+        print('Loading previous runs form logfile(s):')
+        for f in files:
+            print(f)
+    else:
+        opt.maximize(init_points=init_points, n_iter=0)
+
     if plot:
-        pp2 = PlotProgress_2D(opt, true_function=true_function,
-                              cost=lambda x: cost(x, target))
-    opt.maximize(init_points=init_points, n_iter=0)
+        pp2 = PlotProgress_2D(opt, true_function=true_function, cost=cost)
 
     if plot:
         pp2.plot()
@@ -84,9 +102,11 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
             opt.maximize(init_points=0, n_iter=1)
             if plot:
                 pp2.plot()
+    print("MAX: ", opt.max)
+    return opt
 
 
 if __name__ == '__main__':
-    optimize_2d(steps=10, init_points=10,
-                bounds={'x': (0, 1), 'y': (-0.2, 1)},
-                true_function=franke, plot=False)
+    opt = optimize_2d(steps=1, init_points=1,
+                      bounds={'x': (0, 1), 'y': (-0.2, 1)}, plot=False,
+                      load=True)
