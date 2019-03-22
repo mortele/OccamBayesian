@@ -86,27 +86,16 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
     else:
         opt.maximize(init_points=init_points, n_iter=0)
 
-    if plot:
-        pp2 = PlotProgress_2D(opt, true_function=true_function, cost=cost)
-
-    if plot:
-        pp2.plot()
-
     if _check_steps_finite(steps):
         for _ in range(steps):
             opt.maximize(init_points=0, n_iter=1)
-            if plot:
-                pp2.plot()
     else:
         while True:
             opt.maximize(init_points=0, n_iter=1)
-            if plot:
-                pp2.plot()
     print("MAX: ", opt.max)
     return opt
 
 
 if __name__ == '__main__':
     opt = optimize_2d(steps=1, init_points=1,
-                      bounds={'x': (0, 1), 'y': (-0.2, 1)}, plot=False,
-                      load=True)
+                      bounds={'x': (0, 1), 'y': (-0.2, 1)}, load=True)
