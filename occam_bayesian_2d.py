@@ -80,6 +80,7 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
     print('Logging to logfile: ', os.path.abspath(log_file))
     dump_bounds(log_file, bounds)
 
+    no_log_files_found = False
     if load:
         files = find_log_files()
         if len(files) > 0:
@@ -87,8 +88,11 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
             for f in files:
                 print(f)
             load_logs(opt, logs=files)
-    if (init_points is not None) and (init_points > 0) and not load:
-        opt.maximize(init_points=init_points, n_iter=0)
+        else:
+            no_log_files_found = True
+    if (init_points is not None) and (init_points > 0):
+        if no_log_files_found or not load:
+            opt.maximize(init_points=init_points, n_iter=0)
 
     first_step = True
     opt.unsubscribe(Events.OPTMIZATION_END, screen_logger)
