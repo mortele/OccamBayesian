@@ -75,7 +75,7 @@ The optimization process can be visualized by running the `plot_logs.py` script.
 ```bash
 > python3 plot_logs.py path/to/logs
 ```
-> ![2d_example](2d_example.png)
+> ![2d_example](2d_example.gif)
 
 The plot shows the mean of the Gaussian process (top) and the standard deviation (bottom), with the actual measurements indicated as black dots. The last performed measurement is given by the cross hairs. It is possible to inspect the optimization during any iteration, using the slider at the bottom.
 
