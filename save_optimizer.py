@@ -4,6 +4,13 @@ import json
 import numpy as np
 
 
+def dump_bounds(log_file, bounds):
+    log_dir = os.path.dirname(log_file)
+    bounds_file = os.path.join(log_dir, 'bounds.json')
+    with open(bounds_file, 'w') as out_file:
+        json.dump(bounds, out_file)
+
+
 def new_log_file_name():
     os.makedirs('logs', exist_ok=True)
     files = os.listdir('logs')
@@ -21,7 +28,11 @@ def find_log_files():
         return []
     else:
         files = os.listdir('logs')
-        return [os.path.join('logs', f) for f in files]
+        log_files = []
+        for f in files:
+            if ('log' in f) and ('.json' in f):
+                log_files.append(f)
+        return [os.path.abspath(os.path.join('logs', f)) for f in log_files]
 
 
 def _convert_tuple_keys_to_string(dictionary):

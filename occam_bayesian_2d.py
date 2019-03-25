@@ -8,7 +8,7 @@ from bayes_opt.event import Events
 from bayes_opt.util import load_logs
 from franke import franke
 from visualize_2d import PlotProgress_2D
-from save_optimizer import new_log_file_name, find_log_files
+from save_optimizer import new_log_file_name, find_log_files, dump_bounds
 
 
 param_file_name = 'param.dat'
@@ -74,13 +74,14 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
     log_file = new_log_file_name()
     logger = JSONLogger(path=log_file)
     opt.subscribe(Events.OPTMIZATION_STEP, logger)
-    print('Logging to logfile: ', log_file)
+    print('Logging to logfile: ', os.path.abspath(log_file))
+    dump_bounds(log_file, bounds)
 
     if load:
         files = find_log_files()
         load_logs(opt, logs=files)
 
-        print('Loading previous runs form logfile(s):')
+        print('Loading previous runs from logfile(s):')
         for f in files:
             print(f)
     else:

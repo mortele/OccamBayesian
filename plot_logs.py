@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import argparse
 import numpy as np
 from math import isnan
@@ -60,21 +61,34 @@ def _process_path(path):
 
 
 def _get_log_files(path):
-    # Extract list of log files from the path returned from _process_path
     all_files = os.listdir(path)
     log_files = []
     for f in all_files:
         if ('log' in f) and ('.json' in f):
             log_files.append(f)
     assert len(log_files) != 0
-    return log_files
+    return [os.path.abspath(os.path.join(path, f)) for f in log_files]
+
+
+def _load_bounds_file(path_to_log_files):
+    bounds_file = os.path.join(path_to_log_files, 'bounds.json')
+    with open(bounds_file, 'r') as in_file:
+        bounds = json.load(in_file)
+    return bounds
 
 
 def plot_logs(path):
     path_to_log_files = _process_path(path)
-    print(path_to_log_files)
     log_files = _get_log_files(path_to_log_files)
-    print(log_files)
+    bounds = _load_bounds_file(path_to_log_files)
+    opt = BayesianOptimization(f=lambda x, y: None,
+                               pbounds=bounds,
+                               verbose=2)
+    print('Loading optimizer runs from logfile(s):')
+    for f in log_files:
+        print(f)
+    load_logs(opt, logs=log_files)
+    print(opt)
 
 
 if __name__ == '__main__':
