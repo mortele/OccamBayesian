@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm, gridspec
+from matplotlib.widgets import Slider
 from bayes_opt import BayesianOptimization
 from bayes_opt.util import load_logs
 
@@ -73,6 +74,32 @@ def _load_bounds_file(path_to_log_files):
     return bounds
 
 
+def _plot_iteration(iteration, opt, x, y, X, ax0, ax1, obs_points, obs_targets,
+                    gridsize, x_name, y_name):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        opt._gp.fit(obs_points[:][:int(iteration)],
+                    obs_targets[:int(iteration)])
+        mu, s = opt._gp.predict(X, return_std=True)
+    ax0.clear()
+    ax0.hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
+    ax0.axis([x.min(), x.max(), y.min(), y.max()])
+    ax0.plot(obs_points[:int(iteration), 0], obs_points[:int(iteration), 1],
+             'o', markersize=4, c='k')
+    ax0.set_title('Gaussian process mean')
+
+    ax1.clear()
+    ax1.hexbin(x, y, C=s, gridsize=gridsize, cmap=cm.jet, bins=None)
+    ax1.axis([x.min(), x.max(), y.min(), y.max()])
+    ax1.plot(obs_points[:int(iteration), 0], obs_points[:int(iteration), 1],
+             'o', markersize=4, c='k')
+    ax1.set_title('Standard deviation')
+
+    for a in (ax0, ax1):
+        a.set_xlabel(x_name)
+        a.set_ylabel(y_name)
+
+
 def plot_logs(path):
     path_to_log_files = _process_path(path)
     log_files = _get_log_files(path_to_log_files)
@@ -108,7 +135,7 @@ def plot_logs(path):
         mu, s = opt._gp.predict(X, return_std=True)
 
     fig = plt.figure()
-    gs = gridspec.GridSpec(2, 1)
+    gs = gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
     ax0 = plt.subplot(gs[0, 0])
     im0 = ax0.hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
     ax0.axis([x.min(), x.max(), y.min(), y.max()])
@@ -130,6 +157,18 @@ def plot_logs(path):
         a.set_ylabel(y_bound_name)
 
     gs.update(hspace=0.5)
+
+    ax_slider = plt.subplot(gs[2, 0])
+    n_iterations = len(observed_targets)
+    iter_slider = Slider(ax_slider, 'Iteration', 1, n_iterations,
+                         valinit=n_iterations, valstep=1)
+
+    def update(val):
+        _plot_iteration(iter_slider.val, opt, x, y, X, ax0, ax1,
+                        observed_points, observed_targets, gridsize,
+                        x_bound_name, y_bound_name)
+        fig.canvas.draw_idle()
+    iter_slider.on_changed(update)
     plt.show()
 
 
