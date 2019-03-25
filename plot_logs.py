@@ -1,6 +1,10 @@
 import os
 import json
 import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib import gridspec
 from bayes_opt import BayesianOptimization
 from bayes_opt.util import load_logs
 
@@ -80,6 +84,35 @@ def plot_logs(path):
     for f in log_files:
         print(f)
     load_logs(opt, logs=log_files)
+
+    keys = list(bounds.keys())
+    x_bounds = bounds[keys[0]]
+    x_bound_name = keys[0]
+    y_bounds = bounds[keys[1]]
+    y_bound_name = keys[1]
+
+    # mu, s, ut = posterior(bo, X)
+
+    fig, ax = plt.subplots(2, 1)
+    gridsize = 50
+    x = np.linspace(x_bounds[0], x_bounds[1], 100)
+    y = np.linspace(y_bounds[0], y_bounds[1], 100)
+    X, Y = np.meshgrid(x, y)
+    x = X.ravel()
+    y = Y.ravel()
+    X = np.vstack([x, y]).T[:, [1, 0]]
+    print(X)
+    observed_points = np.array([[res['params'][keys[0]],
+                                 res['params'][keys[1]]] for res in opt.res])
+    observed_targets = np.array([res['target'] for res in opt.res])
+    opt._gp.fit(observed_points, observed_targets)
+    # mu, sigma = opt._gp.predict(X, return_std=True)
+    mu = opt._gp.predict(X, return_std=False)
+
+    im = ax[0].hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
+    ax[0].axis([x.min(), x.max(), y.min(), y.max()])
+    ax[0].plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4, c='k')
+    plt.show()
 
 
 if __name__ == '__main__':
