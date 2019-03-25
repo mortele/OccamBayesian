@@ -82,14 +82,14 @@ def _plot_iteration(iteration, opt, x, y, X, ax0, ax1, obs_points, obs_targets,
                     obs_targets[:int(iteration)])
         mu, s = opt._gp.predict(X, return_std=True)
     ax0.clear()
-    ax0.hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
+    im0 = ax0.hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
     ax0.axis([x.min(), x.max(), y.min(), y.max()])
     ax0.plot(obs_points[:int(iteration), 0], obs_points[:int(iteration), 1],
              'o', markersize=4, c='k')
     ax0.set_title('Gaussian process mean')
 
     ax1.clear()
-    ax1.hexbin(x, y, C=s, gridsize=gridsize, cmap=cm.jet, bins=None)
+    im1 = ax1.hexbin(x, y, C=s, gridsize=gridsize, cmap=cm.jet, bins=None)
     ax1.axis([x.min(), x.max(), y.min(), y.max()])
     ax1.plot(obs_points[:int(iteration), 0], obs_points[:int(iteration), 1],
              'o', markersize=4, c='k')
@@ -98,6 +98,7 @@ def _plot_iteration(iteration, opt, x, y, X, ax0, ax1, obs_points, obs_targets,
     for a in (ax0, ax1):
         a.set_xlabel(x_name)
         a.set_ylabel(y_name)
+    return im0, im1
 
 
 def plot_logs(path):
@@ -137,19 +138,23 @@ def plot_logs(path):
     fig = plt.figure()
     gs = gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
     ax0 = plt.subplot(gs[0, 0])
-    im0 = ax0.hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
-    ax0.axis([x.min(), x.max(), y.min(), y.max()])
-    ax0.plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4,
-             c='k')
-    ax0.set_title('Gaussian process mean')
-    fig.colorbar(im0, ax=ax0)
-
     ax1 = plt.subplot(gs[1, 0])
-    im1 = ax1.hexbin(x, y, C=s, gridsize=gridsize, cmap=cm.jet, bins=None)
-    ax1.axis([x.min(), x.max(), y.min(), y.max()])
-    ax1.plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4,
-             c='k')
-    ax1.set_title('Standard deviation')
+
+    def update(val):
+        _plot_iteration(iter_slider.val, opt, x, y, X, ax0, ax1,
+                        observed_points, observed_targets, gridsize,
+                        x_bound_name, y_bound_name)
+        fig.canvas.draw_idle()
+
+    n_iterations = len(observed_targets)
+    ax_slider = plt.subplot(gs[2, 0])
+    iter_slider = Slider(ax_slider, 'Iteration', 1, n_iterations,
+                         valinit=n_iterations, valstep=1)
+    iter_slider.on_changed(update)
+    im0, im1 = _plot_iteration(n_iterations, opt, x, y, X, ax0, ax1,
+                               observed_points, observed_targets, gridsize,
+                               x_bound_name, y_bound_name)
+    fig.colorbar(im0, ax=ax0)
     fig.colorbar(im1, ax=ax1)
 
     for a in (ax0, ax1):
@@ -157,18 +162,6 @@ def plot_logs(path):
         a.set_ylabel(y_bound_name)
 
     gs.update(hspace=0.5)
-
-    ax_slider = plt.subplot(gs[2, 0])
-    n_iterations = len(observed_targets)
-    iter_slider = Slider(ax_slider, 'Iteration', 1, n_iterations,
-                         valinit=n_iterations, valstep=1)
-
-    def update(val):
-        _plot_iteration(iter_slider.val, opt, x, y, X, ax0, ax1,
-                        observed_points, observed_targets, gridsize,
-                        x_bound_name, y_bound_name)
-        fig.canvas.draw_idle()
-    iter_slider.on_changed(update)
     plt.show()
 
 
