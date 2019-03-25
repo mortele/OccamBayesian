@@ -86,6 +86,8 @@ def _plot_iteration(iteration, opt, x, y, X, ax0, ax1, obs_points, obs_targets,
     ax0.axis([x.min(), x.max(), y.min(), y.max()])
     ax0.plot(obs_points[:int(iteration), 0], obs_points[:int(iteration), 1],
              'o', markersize=4, c='k')
+    ax0.axhline(obs_points[int(iteration-1), 1], color='k')
+    ax0.axvline(obs_points[int(iteration-1), 0], color='k')
     ax0.set_title('Gaussian process mean')
 
     ax1.clear()
@@ -93,6 +95,8 @@ def _plot_iteration(iteration, opt, x, y, X, ax0, ax1, obs_points, obs_targets,
     ax1.axis([x.min(), x.max(), y.min(), y.max()])
     ax1.plot(obs_points[:int(iteration), 0], obs_points[:int(iteration), 1],
              'o', markersize=4, c='k')
+    ax1.axhline(obs_points[int(iteration-1), 1], color='k')
+    ax1.axvline(obs_points[int(iteration-1), 0], color='k')
     ax1.set_title('Standard deviation')
 
     for a in (ax0, ax1):
@@ -149,7 +153,7 @@ def plot_logs(path):
     n_iterations = len(observed_targets)
     ax_slider = plt.subplot(gs[2, 0])
     iter_slider = Slider(ax_slider, 'Iteration', 1, n_iterations,
-                         valinit=n_iterations, valstep=1)
+                         valinit=n_iterations, valstep=1, valfmt='%d')
     iter_slider.on_changed(update)
     im0, im1 = _plot_iteration(n_iterations, opt, x, y, X, ax0, ax1,
                                observed_points, observed_targets, gridsize,
@@ -161,7 +165,7 @@ def plot_logs(path):
         a.set_xlabel(x_bound_name)
         a.set_ylabel(y_bound_name)
 
-    gs.update(hspace=0.5)
+    gs.update(hspace=1.0)
     plt.show()
 
 

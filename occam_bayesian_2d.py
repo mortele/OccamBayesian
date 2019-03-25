@@ -111,5 +111,5 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
 
 
 if __name__ == '__main__':
-    opt = optimize_2d(steps=2, init_points=10,
+    opt = optimize_2d(steps=15, init_points=10,
                       bounds={'x': (0, 1), 'y': (-0.2, 1)}, load=True)
