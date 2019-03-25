@@ -3,11 +3,10 @@ import os
 import numpy as np
 from math import isnan
 from bayes_opt import BayesianOptimization
-from bayes_opt.observer import JSONLogger
+from bayes_opt.observer import JSONLogger, ScreenLogger
 from bayes_opt.event import Events
 from bayes_opt.util import load_logs
 from franke import franke
-from visualize_2d import PlotProgress_2D
 from save_optimizer import new_log_file_name, find_log_files, dump_bounds
 
 
@@ -73,23 +72,33 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
                                random_state=92898)
     log_file = new_log_file_name()
     logger = JSONLogger(path=log_file)
+    screen_logger = ScreenLogger(verbose=2)
     opt.subscribe(Events.OPTMIZATION_STEP, logger)
+    opt.subscribe(Events.OPTMIZATION_START, screen_logger)
+    opt.subscribe(Events.OPTMIZATION_STEP, screen_logger)
+    opt.subscribe(Events.OPTMIZATION_END, screen_logger)
     print('Logging to logfile: ', os.path.abspath(log_file))
     dump_bounds(log_file, bounds)
 
     if load:
         files = find_log_files()
-        load_logs(opt, logs=files)
-
-        print('Loading previous runs from logfile(s):')
-        for f in files:
-            print(f)
-    else:
+        if len(files) > 0:
+            print('Loading previous runs from logfile(s):')
+            for f in files:
+                print(f)
+            load_logs(opt, logs=files)
+    if (init_points is not None) and (init_points > 0) and not load:
         opt.maximize(init_points=init_points, n_iter=0)
 
+    first_step = True
+    opt.unsubscribe(Events.OPTMIZATION_END, screen_logger)
+    print('')
     if _check_steps_finite(steps):
         for _ in range(steps):
             opt.maximize(init_points=0, n_iter=1)
+            if first_step:
+                opt.unsubscribe(Events.OPTMIZATION_START, screen_logger)
+                first_step = False
     else:
         while True:
             opt.maximize(init_points=0, n_iter=1)
@@ -98,5 +107,5 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
 
 
 if __name__ == '__main__':
-    opt = optimize_2d(steps=1, init_points=1,
+    opt = optimize_2d(steps=2, init_points=10,
                       bounds={'x': (0, 1), 'y': (-0.2, 1)}, load=True)

@@ -1,16 +1,8 @@
 import os
-import sys
 import json
 import argparse
-import numpy as np
-from math import isnan
 from bayes_opt import BayesianOptimization
-from bayes_opt.observer import JSONLogger
-from bayes_opt.event import Events
 from bayes_opt.util import load_logs
-from franke import franke
-from visualize_2d import PlotProgress_2D
-from save_optimizer import new_log_file_name, find_log_files
 
 
 def _log_files_present(files):
@@ -88,7 +80,6 @@ def plot_logs(path):
     for f in log_files:
         print(f)
     load_logs(opt, logs=log_files)
-    print(opt)
 
 
 if __name__ == '__main__':

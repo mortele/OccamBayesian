@@ -1,7 +1,6 @@
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
-import matplotlib.transforms as trs
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from bayes_opt import UtilityFunction
 
