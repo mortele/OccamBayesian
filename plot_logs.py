@@ -4,7 +4,7 @@ import warnings
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from matplotlib import cm, gridspec
 from bayes_opt import BayesianOptimization
 from bayes_opt.util import load_logs
 
@@ -107,23 +107,29 @@ def plot_logs(path):
         opt._gp.fit(observed_points, observed_targets)
         mu, s = opt._gp.predict(X, return_std=True)
 
-    fig, ax = plt.subplots(2, 1)
-    im0 = ax[0].hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
-    ax[0].axis([x.min(), x.max(), y.min(), y.max()])
-    ax[0].plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4,
-               c='k')
-    fig.colorbar(im0, ax=ax[0])
+    fig = plt.figure()
+    gs = gridspec.GridSpec(2, 1)
+    ax0 = plt.subplot(gs[0, 0])
+    im0 = ax0.hexbin(x, y, C=mu, gridsize=gridsize, cmap=cm.jet, bins=None)
+    ax0.axis([x.min(), x.max(), y.min(), y.max()])
+    ax0.plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4,
+             c='k')
+    ax0.set_title('Gaussian process mean')
+    fig.colorbar(im0, ax=ax0)
 
-    im1 = ax[1].hexbin(x, y, C=s, gridsize=gridsize, cmap=cm.jet, bins=None)
-    ax[1].axis([x.min(), x.max(), y.min(), y.max()])
-    ax[1].plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4,
-               c='k')
-    fig.colorbar(im1, ax=ax[1])
+    ax1 = plt.subplot(gs[1, 0])
+    im1 = ax1.hexbin(x, y, C=s, gridsize=gridsize, cmap=cm.jet, bins=None)
+    ax1.axis([x.min(), x.max(), y.min(), y.max()])
+    ax1.plot(observed_points[:, 0], observed_points[:, 1], 'o', markersize=4,
+             c='k')
+    ax1.set_title('Standard deviation')
+    fig.colorbar(im1, ax=ax1)
 
-    for a in (ax[0], ax[1]):
+    for a in (ax0, ax1):
         a.set_xlabel(x_bound_name)
         a.set_ylabel(y_bound_name)
 
+    gs.update(hspace=0.5)
     plt.show()
 
 
