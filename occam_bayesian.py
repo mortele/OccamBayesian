@@ -1,5 +1,6 @@
 # /usr/local/bin/python3
 import os
+import shlex
 import subprocess
 import matplotlib.pyplot as plt
 from bayes_opt import BayesianOptimization
@@ -13,14 +14,14 @@ def _replace_in_file(file_name, key, value):
     tmp_name = file_name + '_tmp'
     old_name = file_name + '_old'
     with open(file_name, 'r') as in_file, open(tmp_name, 'w') as out_file:
-        next = False
+        next_ = False
         for line in in_file:
-            if next:
+            if next_:
                 out_file.write(str(value) + '\n')
-                next = False
+                next_ = False
             else:
                 if key in line:
-                    next = True
+                    next_ = True
                 out_file.write(line)
     os.rename(file_name, old_name)
     os.rename(tmp_name, file_name)
@@ -52,8 +53,9 @@ def occam_function(path, executable_name='occamcg'):
     """The 'black-box' function we optimize, w.r.t. the parameters adjusted in the
     occam_parameters function.
     """
-    subprocess.call(os.path.join(path, executable_name),
-                    stdout=subprocess.DEVNULL)
+    subprocess.call(shlex.quote(os.path.join(path, executable_name)),
+                    stdout=subprocess.DEVNULL,
+                    shell=False)
     return _read_total_pressure()
 
 
@@ -84,22 +86,6 @@ def occam_optimize(path, steps, kappa, init_points=10):
                                verbose=2,
                                random_state=92898)
     opt.maximize(init_points=init_points, n_iter=0, kappa=5)
-
-    """
-    fit_param = np.array([-496.8262311718876,
-                          2273.7122821175550,
-                          -3724.1669657791103,
-                          2747.1118106958093,
-                          -764.3924710639956])
-    fit_exponents = np.array([0.25, 0.5, 0.75, 1])
-    x = np.linspace(kappa[0], kappa[1], 1000).reshape(-1, 1)
-    y = (fit_param[0]
-         + x**fit_exponents[0] * fit_param[1]
-         + x**fit_exponents[1] * fit_param[2]
-         + x**fit_exponents[2] * fit_param[3]
-         + x**fit_exponents[3] * fit_param[4])
-    y = 1.0 / ((y - target_pressure)**2 + 0.5)
-    """
 
     for _ in range(20):
         opt.maximize(init_points=0, n_iter=5)

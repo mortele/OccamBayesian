@@ -134,11 +134,6 @@ def plot_logs(path):
                                  res['params'][keys[1]]] for res in opt.res])
     observed_targets = np.array([res['target'] for res in opt.res])
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        opt._gp.fit(observed_points, observed_targets)
-        mu, s = opt._gp.predict(X, return_std=True)
-
     fig = plt.figure()
     gs = gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
     ax0 = plt.subplot(gs[0, 0])

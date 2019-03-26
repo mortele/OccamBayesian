@@ -1,4 +1,5 @@
 import os
+import ast
 import types
 import json
 import numpy as np
@@ -45,7 +46,7 @@ def _convert_tuple_keys_to_string(dictionary):
 def _convert_string_keys_to_tuple(dictionary):
     k = dictionary.keys()
     v = dictionary.values()
-    k_tuple = [eval(s) for s in k]
+    k_tuple = [ast.literal_eval(s) for s in k]
     return dict(zip(*[k_tuple, v]))
 
 

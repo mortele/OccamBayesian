@@ -1,7 +1,6 @@
 OccamBayesian 
 &middot;
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/aa032a2503064abfbfdf2931050bc289)](https://app.codacy.com/app/mortele/OccamBayesian?utm_source=github.com&utm_medium=referral&utm_content=mortele/OccamBayesian&utm_campaign=Badge_Grade_Dashboard)
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/aa032a2503064abfbfdf2931050bc289)](https://app.codacy.com/app/mortele/OccamBayesian?utm_source=github.com&utm_medium=referral&utm_content=mortele/OccamBayesian&utm_campaign=Badge_Grade_Dashboard)
 =========
 
 Bayesian optimization applied to OCCAM hybrid particle-field simulations, built on top of [fmfn/BayesianOptimization](https://github.com/fmfn/BayesianOptimization).
@@ -26,7 +25,7 @@ Set the `OCCAM_PATH` in `occam_bayesian.py` to wherever the OCCAM executable is 
 By default, the `occam_bayesian_2d.py` script uses Franke's bivariate test function<sup>[1](#myfootnote1)</sup>, described as
 
 > "This surface consists of two Gaussian peaks and a sharper Gaussian dip superimposed on a surface sloping toward the first quadrant. The latter was included mainly to enhance the visual aspects of the surface (...)"
-![franke_function](franke.png)
+> ![franke_function](franke.png)
 
 Running `occam_bayesian_2d.py` runs a series of optimization steps, with a default of 10 initial (random) ones before the Gaussian process is used for subsequent point suggestions. 
 ```bash
@@ -71,7 +70,7 @@ Loading previous runs from logfile(s):
 |  14       | -0.1863   |  0.257    |  0.1143   |
 ```
 
-The optimization process can be visualized by running the `plot_logs.py` script. By default, this attempts to find logs in the current working directory [or if that fails, the relative `logs/` directory]). You can also specify a directory to look for log files manually on the command line, i.e.
+The optimization process can be visualized by running the `plot_logs.py` script. By default, this attempts to find logs in the current working directory {or if that fails, the relative `logs/` directory}). You can also specify a directory to look for log files manually on the command line, i.e.
 ```bash
 > python3 plot_logs.py path/to/logs
 ```
@@ -81,5 +80,3 @@ The plot shows the mean of the Gaussian process (top) and the standard deviation
 
 ----
 <a name="myfootnote1">1</a>: Franke, Richard. *A critical comparison of some methods for interpolation of scattered data*. Monterey, California: Naval Postgraduate School, 1979.
-
-

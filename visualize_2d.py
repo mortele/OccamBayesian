@@ -80,8 +80,8 @@ class PlotProgress_2D:
         x_obs = np.array([[res["params"][ax_names[0]]] for res in opt.res])
         y_obs = np.array([[res["params"][ax_names[1]]] for res in opt.res])
         target_obs = np.array([res["target"] for res in opt.res])
-        mu, sigma = posterior(self.optimizer, x_obs, y_obs, target_obs,
-                              self.design_matrix)
+        mu, _ = posterior(self.optimizer, x_obs, y_obs, target_obs,
+                          self.design_matrix)
         mu = np.resize(mu, (self.N, self.N))
         self.ax_opt.clear()
         self.ax_opt.plot_surface(self.X, self.Y, mu)

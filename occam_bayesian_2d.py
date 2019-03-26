@@ -38,7 +38,7 @@ def run_simulation():
             params.append(float(line))
 
     with open(result_file_name, 'w') as out_file:
-        f = franke(*tuple(params))
+        f = franke(params[0], params[1])
         out_file.write(str(f))
 
 
@@ -111,5 +111,11 @@ def optimize_2d(path=None, steps=None, init_points=None, bounds=None,
 
 
 if __name__ == '__main__':
-    opt = optimize_2d(steps=15, init_points=10,
+    # Max (x, y) values of the Franke test function, as computed by Matlab:
+    #
+    # >> n = 5000; pts = (0:n)/n; [x,y] = ndgrid(pts,pts); z = franke(x,y);
+    # >> [m,i] = max(z); [mm,j] = max(m); i(j)/n, j/n
+    # (0.2062, 0.2082)
+    #
+    opt = optimize_2d(steps=10, init_points=10,
                       bounds={'x': (0, 1), 'y': (-0.2, 1)}, load=True)
