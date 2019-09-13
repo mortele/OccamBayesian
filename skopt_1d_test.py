@@ -2,7 +2,6 @@ from skopt.acquisition import gaussian_ei
 from skopt import Optimizer
 import numpy as np
 import matplotlib.pyplot as plt
-from asciichartpy import plot
 
 
 #         Noise scaling function
@@ -42,22 +41,69 @@ def noise_scaling(x, noise_var):
 #  -0.9 ┤
 #  -1.0 ╰─────────────────┼────────────────┼─────────────────┼───────────────┼
 #     -2.0              -1.0              0.0               1.0             2.0
-def objective(x, noise_var):
-    noise = noise_scaling(x, noise_var) * np.random.randn(np.squeeze(x.shape))
+def objective(x, noise_var, single=False):
+    if single:
+        x = x[0]
+        noise = noise_scaling(x, noise_var) * np.random.randn()
+    else:
+        noise = (noise_scaling(x, noise_var)
+                 * np.random.randn(np.squeeze(x.shape)))
     return np.sin(5 * x) * (1 - np.tanh(x ** 2)) + noise
 
 
+def plot_optimizer(opt, x, fx, noise_var):
+    model = opt.models[-1]
+    x_model = opt.space.transform(x.tolist())
+    plt.plot(x, fx, "r--", label="True objective")
+
+    fn = objective(x, noise_var)
+    noise = noise_scaling(x, noise_var) * 1.96
+    plt.fill_between(x, fx - noise, fx + noise, alpha=0.2)
+    plt.plot(x, fn, 'k.', label="Noisy samples")
+
+    y_pred, sigma = model.predict(x_model, return_std=True)
+    plt.plot(x, y_pred, "g--", label=r"$\mu(x)$")
+    plt.fill(np.concatenate([x, x[::-1]]),
+             np.concatenate([y_pred - 1.9600 * sigma,
+                             (y_pred + 1.9600 * sigma)[::-1]]),
+             alpha=.2, fc="g", ec="None")
+
+    # Plot sampled points
+    plt.plot(opt.Xi, opt.yi,
+             "r.", markersize=8, label="Observations")
+
+    acq = gaussian_ei(x_model, model, y_opt=np.min(opt.yi))
+    # shift down to make a better plot
+    acq = 4*acq - 2
+    plt.plot(x, acq, "b", label="EI(x)")
+    plt.fill_between(x.ravel(), -2.0, acq.ravel(), alpha=0.3, color='blue')
+
+    # Adjust plot layout
+    plt.grid()
+    plt.legend(loc='best')
+
+
+def optimize_objective(func=None, noise=0.1, initial_iters=10, iters=10):
+    pass
 
 
 if __name__ == '__main__':
     plt.set_cmap("viridis")
     np.random.seed(1234)
     noise_variance = 0.1
+    N = 100
+    x = np.linspace(-2, 2, N)
+    fx = objective(x, noise_variance)
+    res = optimize_objective(func=objective, noise=noise_variance,
+                             initial_iters=10, iters=10)
 
-    x = np.linspace(-2, 2, 70)
-    n = objective(x, 0.0)
-    print(plot(n.tolist(), {'height': 10, 'offset': 3, 'format': "{:5.1}"}))
-
+    opt = Optimizer([(-2.0, 2.0)], "ET", acq_optimizer="sampling")
+    for i in range(10):
+        next_x = opt.ask()
+        f_val = objective(next_x, noise_variance, single=True)
+        opt.tell(next_x, f_val)
+    plot_optimizer(opt, x, fx, noise_variance)
+    plt.show()
 
 
 """
